@@ -6,7 +6,14 @@ Dr. Shah
 CPSC 535: Advanced Algorithms (Spring 2024)
 
 """
+import requests
+from bs4 import BeautifulSoup
+import nltk
+import string
+import re
 
+
+"""Core Text Search Algorithms"""
 ##################### Rabin-Karp ########################
 
 def rabin_karp(text, pattern, d, q):
@@ -89,6 +96,7 @@ def construct_suffix_array(text):
 
 ############### Naive String Matching ###################
 
+""" Provided Function """
 def naive_string_matcher(text, pattern):
 
     n = len(text)
@@ -100,6 +108,11 @@ def naive_string_matcher(text, pattern):
             matches.append(s)
 
     return matches
+
+""" Edited Function for URL input """
+def naive_string_matcher_url(url):
+    text = extract_text(url)
+    print(text)
 
 #########################################################
 
@@ -139,98 +152,123 @@ def kmp_search(text, pattern):
 #########################################################
 
 
+""" Helper Functions """
+
+def extract_text(url):
+    """Preforms natural language preprocessing to extract text from URL"""
+    webpage = requests.get(url)
+    soup = BeautifulSoup(webpage.content, 'html.parser')
+    text = soup.get_text()
+
+    # convert to lowercase
+    text = text.lower()
+
+    # remove punctuation
+    punctuation_remover = str.maketrans('', '', string.punctuation)
+    text = text.translate(punctuation_remover)
+
+    # remove whitespace
+    text = " ".join(text.split())
+
+    return(text)
+
 def main():
-    selected_algo = input("Please enter the corresponding number to select the algorithm you would like to use.\n"
-                          "1 - Rabin Karp\n"
-                          "2 - Suffix Tree\n"
-                          "3 - Suffix Array\n"
-                          "4 - Naive String Matching\n"
-                          "5 - KMP Matching\n"
-                          "6 - EXIT PROGRAM\n")
-
-    # switches input handling based on selected algorithm
-    while selected_algo != "6":
-        if selected_algo == "1":
-            """Rabin Karp"""
-
-            d = 256
-            q = 101
-
-            # User Input
-            text = input("Enter the text: ")
-            pattern = input("Enter the pattern: ")
-
-            # searching for the pattern provided by the user
-            matches = rabin_karp(text, pattern, d, q)
-
-            # display results
-            if matches:
-                print(f"Pattern found at positions: {matches}")
-            else:
-                print("Pattern not found in the text.")
-
-        elif selected_algo == "2":
-            """Suffix Tree"""
-
-            # Get user input
-            text = input("Enter the text: ")
-
-            # Construct and display suffix tree
-            suffix_tree = SuffixTree(text)
-            suffix_tree.display()
-
-        elif selected_algo == "3":
-            """Suffix Array"""
-
-            # Get user input
-            text = input("Enter the text: ")
-
-            # Construct and print suffix array
-            suffix_array = construct_suffix_array(text)
-            print("Suffix Array:", suffix_array)
-
-        elif selected_algo == "4":
-            """Naive String Matching"""
-
-            text = input("Enter the text: ")
-            pattern = input("Enter the pattern: ")
-
-            matches = naive_string_matcher(text, pattern)
-
-            if matches:
-                print(f"Pattern found at positions: {matches}")
-            else:
-                print("Pattern not found in the text.")
-
-        elif selected_algo == "5":
-            """KMP Matching"""
-
-            # Get user input
-            text = input("Enter the text: ")
-            pattern = input("Enter the pattern: ")
-
-            # Find and display occurrences
-            occurrences = kmp_search(text, pattern)
-            if occurrences:
-                print(f'Pattern found at indices: {occurrences}')
-            else:
-                print('Pattern not found in the text.')
+    #url = input("Enter the URL:\n")
+    url = "https://www.fullerton.edu/ecs/cs/about/"
+    naive_string_matcher_url(url)
 
 
-        ## Re-ask intial prompt to select algorithm
-        print("\n")
-        selected_algo = input("Please enter the corresponding number to select the algorithm you would like to use.\n"
-                              "1 - Rabin Karp\n"
-                              "2 - Suffix Tree\n"
-                              "3 - Suffix Array\n"
-                              "4 - Naive String Matching\n"
-                              "5 - KMP Matching\n"
-                              "6 - EXIT PROGRAM\n")
-
-    if selected_algo == "6":
-        """EXIT Program"""
-        print("You have successfully exited the program! Have a great day!")
-        exit()
+    # selected_algo = input("Please enter the corresponding number to select the algorithm you would like to use.\n"
+    #                       "1 - Rabin Karp\n"
+    #                       "2 - Suffix Tree\n"
+    #                       "3 - Suffix Array\n"
+    #                       "4 - Naive String Matching\n"
+    #                       "5 - KMP Matching\n"
+    #                       "6 - EXIT PROGRAM\n")
+    #
+    # # switches input handling based on selected algorithm
+    # while selected_algo != "6":
+    #     if selected_algo == "1":
+    #         """Rabin Karp"""
+    #
+    #         d = 256
+    #         q = 101
+    #
+    #         # User Input
+    #         text = input("Enter the text: ")
+    #         pattern = input("Enter the pattern: ")
+    #
+    #         # searching for the pattern provided by the user
+    #         matches = rabin_karp(text, pattern, d, q)
+    #
+    #         # display results
+    #         if matches:
+    #             print(f"Pattern found at positions: {matches}")
+    #         else:
+    #             print("Pattern not found in the text.")
+    #
+    #     elif selected_algo == "2":
+    #         """Suffix Tree"""
+    #
+    #         # Get user input
+    #         text = input("Enter the text: ")
+    #
+    #         # Construct and display suffix tree
+    #         suffix_tree = SuffixTree(text)
+    #         suffix_tree.display()
+    #
+    #     elif selected_algo == "3":
+    #         """Suffix Array"""
+    #
+    #         # Get user input
+    #         text = input("Enter the text: ")
+    #
+    #         # Construct and print suffix array
+    #         suffix_array = construct_suffix_array(text)
+    #         print("Suffix Array:", suffix_array)
+    #
+    #     elif selected_algo == "4":
+    #         """Naive String Matching"""
+    #
+    #         text = input("Enter the text: ")
+    #         pattern = input("Enter the pattern: ")
+    #
+    #         matches = naive_string_matcher(text, pattern)
+    #
+    #         if matches:
+    #             print(f"Pattern found at positions: {matches}")
+    #         else:
+    #             print("Pattern not found in the text.")
+    #
+    #     elif selected_algo == "5":
+    #         """KMP Matching"""
+    #
+    #         # Get user input
+    #         text = input("Enter the text: ")
+    #         pattern = input("Enter the pattern: ")
+    #
+    #         # Find and display occurrences
+    #         occurrences = kmp_search(text, pattern)
+    #         if occurrences:
+    #             print(f'Pattern found at indices: {occurrences}')
+    #         else:
+    #             print('Pattern not found in the text.')
+    #
+    #
+    #     ## Re-ask intial prompt to select algorithm
+    #     print("\n")
+    #     selected_algo = input("Please enter the corresponding number to select the algorithm you would like to use.\n"
+    #                           "1 - Rabin Karp\n"
+    #                           "2 - Suffix Tree\n"
+    #                           "3 - Suffix Array\n"
+    #                           "4 - Naive String Matching\n"
+    #                           "5 - KMP Matching\n"
+    #                           "6 - EXIT PROGRAM\n")
+    #
+    # if selected_algo == "6":
+    #     """EXIT Program"""
+    #     print("You have successfully exited the program! Have a great day!")
+    #     exit()
 
 
 if __name__ == '__main__':
