@@ -6,11 +6,20 @@ Dr. Shah
 CPSC 535: Advanced Algorithms (Spring 2024)
 
 """
+import nltk
 import requests
 from bs4 import BeautifulSoup
 import nltk
 import string
 import re
+from nltk import word_tokenize
+from nltk.corpus import stopwords
+from sklearn.feature_extraction.text import CountVectorizer
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from wordcloud import WordCloud
+
 
 
 """Core Text Search Algorithms"""
@@ -104,15 +113,16 @@ def naive_string_matcher(text, pattern):
     matches = []
 
     for s in range(n - m + 1):
+        print(text[s:s+m])
         if text[s:s+m] == pattern:
             matches.append(s)
 
     return matches
 
 """ Edited Function for URL input """
-def naive_string_matcher_url(url):
+def naive_string_matcher_url(url, pattern):
     text = extract_text(url)
-    print(text)
+    return naive_string_matcher(text, pattern)
 
 #########################################################
 
@@ -151,6 +161,41 @@ def kmp_search(text, pattern):
 
 #########################################################
 
+""" Return the top 10 key words in text"""
+
+def get_keywords(url):
+    text = extract_text(url)
+
+    vectorizer = CountVectorizer()
+    matrix = vectorizer.fit_transform([text])
+
+    # Convert the matrix to a DataFrame and sort the keywords by their frequency
+    counts = pd.DataFrame(matrix.toarray(), columns=vectorizer.get_feature_names_out()).sum().sort_values(ascending=False)
+
+    # Get the top 10 keywords
+    #keywords = counts.head(10)
+
+    # Converting dataframe to lists
+    keywords_list = counts.index.tolist()[:10]
+    frequency_list = counts.values.tolist()[:10]
+
+    # combining lists into a dictionary
+    keywords_dict = dict(zip(keywords_list, frequency_list))
+
+    return keywords_dict
+
+""" Create Word Cloud"""
+
+def create_wordcloud(keywords):
+    wordcloud = WordCloud(background_color='white', colormap='Paired', width=800, height=500).generate_from_frequencies(keywords)
+
+    plt.figure(figsize=(15, 8))
+
+    # display wordcloud
+    plt.imshow(wordcloud)
+    plt.show()
+
+    return wordcloud
 
 """ Helper Functions """
 
@@ -170,12 +215,33 @@ def extract_text(url):
     # remove whitespace
     text = " ".join(text.split())
 
+    # remove stopwords
+    stop_words = set(nltk.corpus.stopwords.words('english'))
+    tokens = word_tokenize(text)
+    updated_text = [word for word in tokens if word not in stop_words]
+
+    # join tokens back into a string
+    separator = ' '  # The separator is a space by default
+    text = separator.join(updated_text)
+
+    # this text is now tokenized and cleaned
     return(text)
 
 def main():
     #url = input("Enter the URL:\n")
     url = "https://www.fullerton.edu/ecs/cs/about/"
-    naive_string_matcher_url(url)
+    #matches = naive_string_matcher_url(url, "computer")
+    #print(matches)
+
+    """Return top 10 keywords"""
+    keywords = get_keywords(url)
+    print("Keyword Suggestions Based on Frequency")
+    print(keywords)
+
+    """Create wordcloud"""
+    create_wordcloud(keywords)
+
+
 
 
     # selected_algo = input("Please enter the corresponding number to select the algorithm you would like to use.\n"
