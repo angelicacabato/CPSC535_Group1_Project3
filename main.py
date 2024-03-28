@@ -6,25 +6,24 @@ Dr. Shah
 CPSC 535: Advanced Algorithms (Spring 2024)
 
 """
-import nltk
+
 import requests
 from bs4 import BeautifulSoup
 import nltk
 import string
-import re
 from nltk import word_tokenize
-from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 from wordcloud import WordCloud
+from time import perf_counter_ns
 
 
 
 """Core Text Search Algorithms"""
 ##################### Rabin-Karp ########################
 
+"""PROVIDED CODE"""
 def rabin_karp(text, pattern, d, q):
     n = len(text)
     m = len(pattern)
@@ -50,14 +49,31 @@ def rabin_karp(text, pattern, d, q):
                 t = t+q
     return result
 
+"""EDITED CODE FOR URL INPUT"""
+def rabin_karp_url(url, patterns):
+    text = extract_text(url)
+
+    rk_matches = {}
+    rk_start_time = perf_counter_ns()
+
+    for pattern in patterns:
+        rk_cur_matches = rabin_karp(text, pattern, d=256, q=101)
+        rk_matches[pattern] = rk_cur_matches
+
+    rk_end_time = perf_counter_ns()
+
+    rk_execution_time = rk_end_time - rk_start_time
+
+    return rk_matches, rk_execution_time
+
 #########################################################
 
 ##################### Suffix Tree #######################
+"""PROVIDED CODE"""
 class TrieNode:
     def __init__(self):
         self.children = {}
         self.is_end_of_word = False
-
 
 class Trie:
     def __init__(self):
@@ -90,22 +106,93 @@ class SuffixTree:
             for char, child in node.children.items():
                 self.display(child, prefix + char)
 
+    def search(self, pattern):
+        node = self.trie.root
+        if pattern not in node.children:
+            return False
+        else:
+            return True
+
+"""EDITED CODE FOR URL INPUT"""
+
+
+def suffix_tree_url(url, patterns):
+    text = extract_text(url)
+    tokens = word_tokenize(text)
+    st_occurrences = {}
+    st_start_time = perf_counter_ns()
+
+    text_tree = SuffixTree(tokens)
+
+    for pattern in patterns:
+        st_cur_occurrences = text_tree.search(pattern)
+        st_occurrences[pattern] = st_cur_occurrences
+
+    st_end_time = perf_counter_ns()
+
+    st_execution_time = st_end_time - st_start_time
+
+    return st_occurrences, st_execution_time
 
 #########################################################
 
 ##################### Suffix Array ######################
-
+"""PROVIDED CODE"""
 def construct_suffix_array(text):
     suffixes = [(text[i:], i) for i in range(len(text))]
     suffixes.sort(key=lambda x: x[0])
     suffix_array = [item[1] for item in suffixes]
     return suffix_array
 
+"""EDITED CODE FOR URL INPUT"""
+
+
+def search_suffix_array(pattern, text, suffix_array):
+    n = len(text)
+    m = len(pattern)
+
+    # Initialize left and right indicies
+    left = 0
+    right = n - 1
+
+    # preform binary search
+    while left <= right:
+        middle = left + (right - left) // 2
+        substring = text[suffix_array[middle]:suffix_array[middle] + m]
+
+        if substring == pattern:
+            return suffix_array[middle]
+
+        if substring < pattern:
+            left = middle + 1
+        else:
+            right = middle - 1
+    return None
+
+def suffix_array_url(url, patterns):
+    text = extract_text(url)
+    tokens = word_tokenize(text)
+    sa_matches = {}
+    sa_start_time = perf_counter_ns()
+
+    text_suffix_array = construct_suffix_array(text)
+
+    for pattern in patterns:
+        sa_cur_matches = search_suffix_array(pattern, text, text_suffix_array)
+        if sa_cur_matches != None:
+            sa_matches[pattern] = sa_cur_matches
+
+    sa_end_time = perf_counter_ns()
+
+    sa_execution_time = sa_end_time - sa_start_time
+
+    return sa_matches, sa_execution_time
+
 #########################################################
 
 ############### Naive String Matching ###################
 
-""" Provided Function """
+"""PROVIDED CODE"""
 def naive_string_matcher(text, pattern):
 
     n = len(text)
@@ -119,15 +206,28 @@ def naive_string_matcher(text, pattern):
 
     return matches
 
-""" Edited Function for URL input """
-def naive_string_matcher_url(url, pattern):
+"""EDITED CODE FOR URL INPUT"""
+
+def naive_string_matcher_url(url, patterns):
     text = extract_text(url)
-    return naive_string_matcher(text, pattern)
+
+    nsm_matches = {}
+    nsm_start_time = perf_counter_ns()
+
+    for pattern in patterns:
+        nsm_cur_matches = kmp_search(text, pattern)
+        nsm_matches[pattern] = nsm_cur_matches
+
+    nsm_end_time = perf_counter_ns()
+
+    nsm_execution_time = nsm_end_time - nsm_start_time    # in nanoseconds
+    return nsm_matches, nsm_execution_time
 
 #########################################################
 
 #################### KMP algorithm ######################
 
+"""PROVIDED CODE"""
 def compute_prefix_function(pattern):
     m = len(pattern)
     pi = [0] * m
@@ -159,6 +259,25 @@ def kmp_search(text, pattern):
 
     return occurrences
 
+"""EDITED CODE FOR URL INPUT"""
+def kmp_search_url(url, patterns):
+    text = extract_text(url)
+    """calculates the occurrences of the patterns in text"""
+
+    kmp_occurrences = {}
+    kmp_start_time = perf_counter_ns()
+
+    for pattern in patterns:
+        kmp_cur_occurrences = kmp_search(text, pattern)
+        kmp_occurrences[pattern] = kmp_cur_occurrences
+
+    kmp_end_time = perf_counter_ns()
+    kmp_execution_time = kmp_end_time - kmp_start_time    # in nanoseconds
+
+    return kmp_occurrences, kmp_execution_time
+
+
+
 #########################################################
 
 """ Return the top 10 key words in text"""
@@ -184,6 +303,7 @@ def get_keywords(url):
 
     return keywords_dict
 
+
 """ Create Word Cloud"""
 
 def create_wordcloud(keywords):
@@ -197,10 +317,9 @@ def create_wordcloud(keywords):
 
     return wordcloud
 
-""" Helper Functions """
+"""Preforms natural language preprocessing to extract text from URL"""
 
 def extract_text(url):
-    """Preforms natural language preprocessing to extract text from URL"""
     webpage = requests.get(url)
     soup = BeautifulSoup(webpage.content, 'html.parser')
     text = soup.get_text()
@@ -229,20 +348,105 @@ def extract_text(url):
 
 def main():
     #url = input("Enter the URL:\n")
-    url = "https://www.fullerton.edu/ecs/cs/about/"
-    #matches = naive_string_matcher_url(url, "computer")
-    #print(matches)
+    url = "https://en.wikipedia.org/wiki/California_State_University,_Fullerton" # user inputs using text field
+    selected_algo = ["Rabin-Karp", "Suffix Tree", "Suffix Array", "Naive String Matching", "KMP"]   # user selects using drop down menu
 
-    """Return top 10 keywords"""
+    """ Running Keywords and wordcloud functions that will always be displayed """
+    # Get top 10 keywords
     keywords = get_keywords(url)
-    print("Keyword Suggestions Based on Frequency")
-    print(keywords)
+    print("Top 10 Keywords Based on Frequency")
+    print(keywords, "\n")
 
-    """Create wordcloud"""
+    # get only the keys for function inputs
+    keywords_tokens = []
+    for key in keywords.keys():
+        keywords_tokens.append(key)
+
+    """Display wordcloud"""
     create_wordcloud(keywords)
 
+    """ Running all functions to store values """
+
+    all_execution_times = []
+    rk_matches, rk_execution_time = rabin_karp_url(url, keywords_tokens)
+    all_execution_times.append(rk_execution_time)
+
+    st_occurrences, st_execution_time = suffix_tree_url(url, keywords_tokens)
+    all_execution_times.append(st_execution_time)
+
+    sa_matches, sa_execution_time = suffix_array_url(url, keywords_tokens)
+    all_execution_times.append(sa_execution_time)
+
+    nsm_matches, nsm_execution_time = naive_string_matcher_url(url, keywords_tokens)
+    all_execution_times.append(nsm_execution_time)
+
+    kmp_matches, kmp_execution_time = kmp_search_url(url, keywords_tokens)
+    all_execution_times.append(kmp_execution_time)
+
+    """ Display Bar Graph Comparing Execution Times """
+    all_algorithms = ["Rabin-Karp", "Suffix Tree", "Suffix Array", "Naive String Matching", "KMP"]
 
 
+    plt.bar(all_algorithms, all_execution_times, color=['green', 'orange', 'blue', 'purple', 'red'])
+    plt.xlabel('Algorithm')
+    plt.ylabel('Execution Time (ns)')
+    plt.tick_params(axis='y', pad=10)
+    plt.title('Comparing Algorithm Efficiency')
+    plt.show()
+
+    """"Loop through selected algorithms"""
+    # switches input handling based on selected algorithm
+    for algo in selected_algo:
+        if algo == "Rabin-Karp":
+            print(f"Rabin-Karp - Execution Time is {rk_execution_time} ns")
+            print(f"Keyword Indexes using Rabin-Karp: {rk_matches}\n")
+
+
+        elif algo == "Suffix Tree":
+            print(f"Suffix Tree - Execution Time is {st_execution_time} ns")
+            print(f"Verifying all keywords are in the Suffix Tree built using the text: {st_occurrences}\n")
+
+
+        elif algo == "Suffix Array":
+            print(f"Suffix Array - Execution Time is {sa_execution_time} ns")
+            print(f"Keyword Indexes using using Suffix Array: {sa_matches}\n")
+
+        elif algo == "Naive String Matching":
+            print(f"Naive String Matching - Execution Time is {rk_execution_time} ns")
+            print(f"Keyword Indexes using Naive String Matching: {rk_matches}\n")
+
+        elif algo == "KMP":
+            print(f"KMP - Execution Time is {kmp_execution_time} ns")
+            print(f"Keyword Indexes of Keywords using KMP: {kmp_matches}\n")
+
+
+    """Code for searching for a user-inputted word in the text"""
+
+    input_keyword = "orange"    # user inputs via text field
+    text = extract_text(url)
+    text_length = len(text)
+    top_keyword = list(keywords.keys())[0]
+    top_keyword_occurrence = keywords[top_keyword]
+    percent_of_top_keyword = ((top_keyword_occurrence / text_length) * 100)
+    temp = "{:.2f}".format(percent_of_top_keyword)
+    percent_of_top_keyword = float(temp)
+
+    # using kmp since it is fastest out of multiple tests
+    input_keyword_matches = kmp_search(text, input_keyword)
+    if input_keyword_matches is None:
+        print(f'"{input_keyword}" not found in text. Not a suitable keyword.')
+    else:
+        percent_of_text = ((len(input_keyword_matches)/text_length) * 100)
+        temp = "{:.2f}".format(percent_of_text)
+        percent_of_text = float(temp)
+
+        print(f'The inputted term "{input_keyword}" appears {len(input_keyword_matches)} times in the text. This is {percent_of_text}% of the entire text. (For Reference: Top keyword "{top_keyword}" is {percent_of_top_keyword}% of the entire text.)')
+
+
+
+    #############################################################################################################
+
+    """Below is test code to verify that the algorithms are working"""
 
     # selected_algo = input("Please enter the corresponding number to select the algorithm you would like to use.\n"
     #                       "1 - Rabin Karp\n"
