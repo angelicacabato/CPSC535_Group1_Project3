@@ -18,8 +18,6 @@ import matplotlib.pyplot as plt
 from wordcloud import WordCloud
 from time import perf_counter_ns
 
-
-
 """Core Text Search Algorithms"""
 ##################### Rabin-Karp ########################
 
@@ -412,8 +410,8 @@ def main():
             print(f"Keyword Indexes using using Suffix Array: {sa_matches}\n")
 
         elif algo == "Naive String Matching":
-            print(f"Naive String Matching - Execution Time is {rk_execution_time} ns")
-            print(f"Keyword Indexes using Naive String Matching: {rk_matches}\n")
+            print(f"Naive String Matching - Execution Time is {nsm_execution_time} ns")
+            print(f"Keyword Indexes using Naive String Matching: {nsm_matches}\n")
 
         elif algo == "KMP":
             print(f"KMP - Execution Time is {kmp_execution_time} ns")
