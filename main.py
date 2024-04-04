@@ -346,6 +346,7 @@ def extract_text(url):
 
 def main():
     nltk.download('stopwords')
+    nltk.download('punkt')
     #url = input("Enter the URL:\n")
     url = "https://en.wikipedia.org/wiki/California_State_University,_Fullerton" # user inputs using text field
     selected_algo = ["Rabin-Karp", "Suffix Tree", "Suffix Array", "Naive String Matching", "KMP"]   # user selects using drop down menu

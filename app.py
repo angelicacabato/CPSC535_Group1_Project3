@@ -18,6 +18,7 @@ from main import extract_text, get_keywords, rabin_karp_url, suffix_tree_url, su
 
 def main():
     nltk.download('stopwords')
+    nltk.download('punkt')
     st.header("SEO Keyword Tracker and Analyzer")
     st.subheader("CPSC 535 (Spring 2024) - Group 1")
 
