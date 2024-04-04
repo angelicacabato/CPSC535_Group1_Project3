@@ -24,7 +24,7 @@ def main():
 
     url = st.text_input('Please enter a URL')
     if url:
-        st.write('The URL you inputted it is', url)
+        st.write('The URL you inputted it is', url, '.')
 
     algo = st.selectbox(
         'Please Select Text Search Algorithm',
@@ -37,7 +37,7 @@ def main():
         'Would you like to search and analyze a keyword from the URL? If so, enter the word below!',
         placeholder="OPTIONAL")
     if inputted_keyword:
-        st.write(f'The keyword you entered is **{inputted_keyword}**')
+        st.write(f'The keyword you entered is **{inputted_keyword}**.')
 
     run_analysis = st.button("Run Keyword Analysis")
 
