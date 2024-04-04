@@ -5,5 +5,5 @@ requests
 bs4
 nltk
 pandas
-sklearn-learn
+scikit-learn
 SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL==True
