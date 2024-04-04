@@ -1,0 +1,7 @@
+streamlit
+matplotlib
+wordcloud
+requests
+bs4
+nltk
+pandas
