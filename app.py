@@ -10,12 +10,14 @@ CPSC 535: Advanced Algorithms (Spring 2024)
 import streamlit as st
 from matplotlib import pyplot as plt
 from wordcloud import WordCloud
+import nltk
 
 from main import extract_text, get_keywords, rabin_karp_url, suffix_tree_url, suffix_array_url, \
     naive_string_matcher_url, kmp_search_url, kmp_search
 
 
 def main():
+    nltk.download('stopwords')
     st.header("SEO Keyword Tracker and Analyzer")
     st.subheader("CPSC 535 (Spring 2024) - Group 1")
 
