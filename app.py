@@ -7,6 +7,7 @@ CPSC 535: Advanced Algorithms (Spring 2024)
 
 """
 
+import requests
 import streamlit as st
 from matplotlib import pyplot as plt
 from wordcloud import WordCloud
@@ -15,16 +16,33 @@ import nltk
 from main import extract_text, get_keywords, rabin_karp_url, suffix_tree_url, suffix_array_url, \
     naive_string_matcher_url, kmp_search_url, kmp_search
 
-
 def main():
     nltk.download('stopwords')
     nltk.download('punkt')
     st.header("SEO Keyword Tracker and Analyzer")
     st.subheader("CPSC 535 (Spring 2024) - Group 1")
 
+    valid_url = False
+    valid_keyword = False
+
     url = st.text_input('Please enter a URL')
     if url:
-        st.write('The URL you inputted it is', url, '.')
+        # check is URL is valid
+        try:
+            response = requests.get(url, timeout=10)
+            # Status codes 200 indicates reachable url
+            if response.status_code == 200:
+                print("The website is reachable.")
+                valid_url = True
+            else:
+                print("The website is not reachable. Status Code:", response.status_code)
+        except requests.ConnectionError:
+            print("Failed to connect to inputted URL.")
+
+        if valid_url is True:
+            st.write('The URL you inputted it is', url, '.')
+        else:
+            st.write('ERROR: The URL you inputted it is not valid/reachable. Please input a valid URL.')
 
     algo = st.selectbox(
         'Please Select Text Search Algorithm',
@@ -37,15 +55,19 @@ def main():
         'Would you like to search and analyze a keyword from the URL? If so, enter the word below!',
         placeholder="OPTIONAL")
     if inputted_keyword:
-        st.write(f'The keyword you entered is **{inputted_keyword}**.')
+        if len(inputted_keyword.split()) > 1:
+            st.write("You entered more than one word. Please only enter a single word. Try again.")
+        else:
+            valid_keyword = True
+            st.write(f'The keyword you entered is **{inputted_keyword}**.')
 
     run_analysis = st.button("Run Keyword Analysis")
 
     # places a divider between inputs and outputs
     st.divider()
 
-    # if button is pressed, url is inputted, and algo is selected, run analysis
-    if run_analysis and url and algo:
+    # if button is pressed, url is inputted and valid, and algo is selected, run analysis
+    if run_analysis and url and algo and valid_url:
         # Get top 10 keywords
         keywords = get_keywords(url)
         st.subheader("Top 10 Keywords Based on Frequency")
@@ -191,8 +213,8 @@ def main():
             st.json(kmp_matches, expanded=False)
             st.divider()
 
-        # if inputted Keyword is provided - search for word in text
-        if inputted_keyword:
+        # if inputted Keyword is provided and valid - search for word in text
+        if inputted_keyword and valid_keyword:
             # Search for Keyword
             st.subheader("Inputted Keyword Search and Analysis")
             text = extract_text(url)
@@ -204,13 +226,14 @@ def main():
             percent_of_top_keyword = float(temp)
 
             # Using Suffix Tree to verify that keyword is in text
-            token_keyword = [inputted_keyword, "placeholder"]  # need to convert to list for function to work properly
+            inputted_keyword_lower = inputted_keyword.lower()     # convert to lowercase
+            token_keyword = [inputted_keyword_lower, "placeholder"]  # need to convert to list for function to work properly
             verify_keyword = (suffix_tree_url(url, token_keyword))[0]  # only getting the matches, not execution time
-            if verify_keyword[inputted_keyword] == True:
+            if verify_keyword[inputted_keyword_lower] == True:
                 st.write(f"Keyword **{inputted_keyword}** found in URL content!")
 
                 # if pattern is found, use kmp to find occurrences in text
-                input_keyword_matches = kmp_search(text, inputted_keyword)
+                input_keyword_matches = kmp_search(text, inputted_keyword_lower)
                 if input_keyword_matches is None:
                     st.write(f'"**{inputted_keyword}**" not found in text. Not a suitable keyword.')
                 else:
@@ -218,18 +241,36 @@ def main():
                     temp = "{:.2f}".format(percent_of_text)
                     percent_of_text = float(temp)
 
-                    st.write(
-                        f'The inputted term "**{inputted_keyword}**" appears **{len(input_keyword_matches)}** times in the text. This is **{percent_of_text}%** of the entire text. (For Reference: Top keyword "**{top_keyword}**" is **{percent_of_top_keyword}%** of the entire text.)')
-                    st.write(f'Below are the indexes where "**{inputted_keyword}**" is found in the text.')
-                    st.json(input_keyword_matches, expanded=False)
+                    num_keywords = len(input_keyword_matches)  # variable to store number of keyword matches
+
+                    if inputted_keyword_lower in keywords:
+                        num_keywords = keywords.get(inputted_keyword_lower)
+                        percent_of_text = ((num_keywords / text_length) * 100)
+                        temp = "{:.2f}".format(percent_of_text)
+                        percent_of_text = float(temp)
+
+                        # return keyword data
+                        st.write(
+                            f'The inputted term "**{inputted_keyword}**" appears **{num_keywords}** times in the text. It is already within the top 10 keywords! This keyword is **{percent_of_text}%** of the entire text.')
+                        st.json(input_keyword_matches, expanded=False)
+
+                    else:
+                        # return keyword data
+                        st.write(
+                            f'The inputted term "**{inputted_keyword}**" appears **{num_keywords}** times in the text. This is **{percent_of_text}%** of the entire text. (For Reference: Top keyword "**{top_keyword}**" is **{percent_of_top_keyword}%** of the entire text.)')
+                        st.write(f'Below are the indexes where "**{inputted_keyword}**" is found in the text.')
+                        st.json(input_keyword_matches, expanded=False)
+
             else:
                 st.write(f'"{inputted_keyword}" not found in text. Not a suitable keyword.')
-
-
+        else:
+            if inputted_keyword and valid_keyword is False:
+                st.subheader("Inputted Keyword Search and Analysis")
+                st.write("ERROR: You entered more than one word. Please only enter a single word. Try again.")
 
     # if button is pressed or url is not inputted, or algo is not selected, prompt user to enter required information
     else:
-        "Cannot Proceed. Must enter a URL and select an algorithm. Thank you!"
+        "Cannot Proceed. Must enter a valid/reachable URL and select an algorithm. Thank you!"
 
 
 if __name__ == '__main__':
