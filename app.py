@@ -38,6 +38,10 @@ def main():
                 print("The website is not reachable. Status Code:", response.status_code)
         except requests.ConnectionError:
             print("Failed to connect to inputted URL.")
+        except requests.exceptions.MissingSchema:
+            print(f"Error: The URL is invalid because it lacks a schema (http or https).")
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
 
         if valid_url is True:
             st.write('The URL you inputted it is', url, '.')
