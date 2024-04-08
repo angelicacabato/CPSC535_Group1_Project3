@@ -1,4 +1,4 @@
-To run this application locally, download all files and enter this command in the terminal/command line.
+To run this application locally, download all files and enter this command in the terminal/command line:
 
 streamlit run app.py
 
