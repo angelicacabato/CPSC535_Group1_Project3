@@ -125,7 +125,7 @@ def main():
             sa_matches, sa_execution_time = suffix_array_url(url, keywords_tokens)
             st.subheader("Keyword Search Using Suffix Array")
             st.write(f"Suffix Array - Execution Time is **{sa_execution_time}** ns")
-            st.write(f"First Keyword indexes using using Suffix Array:")
+            st.write(f"Keyword index using Suffix Array:")
             st.json(sa_matches, expanded=False)
             # place a divider between algorithms
             st.divider()

@@ -213,7 +213,7 @@ def naive_string_matcher_url(url, patterns):
     nsm_start_time = perf_counter_ns()
 
     for pattern in patterns:
-        nsm_cur_matches = kmp_search(text, pattern)
+        nsm_cur_matches = naive_string_matcher(text, pattern)
         nsm_matches[pattern] = nsm_cur_matches
 
     nsm_end_time = perf_counter_ns()
