@@ -199,7 +199,7 @@ def main():
             # Suffix Array
             st.subheader("Keyword Search Using Suffix Array")
             st.write(f"Suffix Array - Execution Time is **{sa_execution_time}** ns")
-            st.write(f"FIrst Keyword indexes using using Suffix Array:")
+            st.write(f"Keyword index using Suffix Array:")
             st.json(sa_matches, expanded=False)
             st.divider()
 
