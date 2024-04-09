@@ -198,7 +198,6 @@ def naive_string_matcher(text, pattern):
     matches = []
 
     for s in range(n - m + 1):
-        print(text[s:s+m])
         if text[s:s+m] == pattern:
             matches.append(s)
 
