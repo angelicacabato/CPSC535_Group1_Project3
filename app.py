@@ -143,7 +143,7 @@ def main():
             kmp_matches, kmp_execution_time = kmp_search_url(url, keywords_tokens)
             st.subheader("Keyword Search Using KMP")
             st.write(f"KMP - Execution Time is **{kmp_execution_time}** ns")
-            st.write(f"Keyword indexes of Keywords using KMP:")
+            st.write(f"Keyword indexes using KMP:")
             st.json(kmp_matches, expanded=False)
             # place a divider between algorithms
             st.divider()
@@ -213,7 +213,7 @@ def main():
             # KMP
             st.subheader("Keyword Search Using KMP")
             st.write(f"KMP - Execution Time is **{kmp_execution_time}** ns")
-            st.write(f"Keyword indexes of Keywords using KMP:")
+            st.write(f"Keyword indexes using KMP:")
             st.json(kmp_matches, expanded=False)
             st.divider()
 
